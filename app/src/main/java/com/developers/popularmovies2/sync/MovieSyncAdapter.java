@@ -67,7 +67,7 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter{
                 choice="top_rated";
             }
             Log.d(TAG," "+choice);
-            String url1="http://api.themoviedb.org/3/movie/"+choice+"?api_key=087bb61fd26c6e8793560abed4300557";
+            String url1="http://api.themoviedb.org/3/movie/"+choice+"?api_key=********************************";//enter your apikey here
             Log.d(TAG,url1);
             URL url=new URL(url1);
             HttpURLConnection conn= (HttpURLConnection) url.openConnection();
@@ -174,7 +174,7 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter{
 
     private void fetchReviews(String id) {
         try{
-            String url2="http://api.themoviedb.org/3/movie/"+id+"/reviews?api_key=087bb61fd26c6e8793560abed4300557";
+            String url2="http://api.themoviedb.org/3/movie/"+id+"/reviews?api_key=***************************";// enter your apikey here
             URL url3=new URL(url2);
             HttpURLConnection con2= (HttpURLConnection) url3.openConnection();
             InputStream inn=con2.getInputStream();
@@ -197,7 +197,7 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter{
     private void fetchTrailers(String id) {
 
     try{
-        String stringurl="http://api.themoviedb.org/3/movie/"+id+"/videos?api_key=087bb61fd26c6e8793560abed4300557";
+        String stringurl="http://api.themoviedb.org/3/movie/"+id+"/videos?api_key=******************************";//enter your apikey here
         URL url2=new URL(stringurl);
         HttpURLConnection con1= (HttpURLConnection) url2.openConnection();
         InputStream is=con1.getInputStream();
