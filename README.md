@@ -1,7 +1,7 @@
 # Popular-Movies-2
 Popular Movies stage-2
 This is stage-2 of Popular movies part of udacity course.
-Learning outcomes:-
+Learning outcomes:-<br>
 1. Implementing content providers with SQLite database.<br>
 2. Working with SyncAdapter.<br>
 3. Using Loaders.<br>
