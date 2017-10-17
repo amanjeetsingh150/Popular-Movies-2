@@ -3,4 +3,10 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="api_key_attr">api_key</string>
+    <string name="trailer_attr">videos</string>
+    <string name="reviews_attr">reviews</string>
+    <string name="overview_text">Overview:</string>
+    <string name="reviews_text">Reviews:</string>
+    <string name="trailers_text">Trailers:</string>
 </resources>

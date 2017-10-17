@@ -22,7 +22,7 @@
         </activity>
 
         <provider
-            android:name=".data.MyContentProvider"
+            android:name=".data.MoviesContentProvider"
             android:authorities="com.developers.popularmovies2"
             android:exported="false"
             android:syncable="true" />
@@ -48,8 +48,9 @@
                 android:resource="@xml/authenticator" />
         </service>
 
-        <activity android:name=".DetailActivity"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity
+            android:name=".DetailActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 
 </manifest>

@@ -6,8 +6,9 @@ import android.os.IBinder;
 import android.util.Log;
 
 public class MovieSyncService extends Service {
-    private static final Object sSyncAdapterLock=new Object();
-    private static MovieSyncAdapter movieSyncAdapter=null;
+    private static final Object sSyncAdapterLock = new Object();
+    private static MovieSyncAdapter movieSyncAdapter = null;
+
     public MovieSyncService() {
     }
 

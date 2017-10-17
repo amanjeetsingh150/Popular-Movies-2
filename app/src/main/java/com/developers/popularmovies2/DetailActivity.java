@@ -9,12 +9,12 @@ public class DetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
-        if(savedInstanceState==null){
-           Bundle argument=new Bundle();
-            argument.putParcelable(DetailFragment.DETAIL,getIntent().getData());
-            DetailFragment detail=new DetailFragment();
+        if (savedInstanceState == null) {
+            Bundle argument = new Bundle();
+            argument.putParcelable(DetailFragment.DETAIL, getIntent().getData());
+            DetailFragment detail = new DetailFragment();
             detail.setArguments(argument);
-            getSupportFragmentManager().beginTransaction().add(R.id.fragment,detail).commit();
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment, detail).commit();
         }
     }
 }

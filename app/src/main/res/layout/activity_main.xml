@@ -4,6 +4,6 @@
     android:id="@+id/movies_list_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    class="com.developers.popularmovies2.MovieGrid"
+    class="com.developers.popularmovies2.MainFragment"
     tools:context=".MainActivity" />
 

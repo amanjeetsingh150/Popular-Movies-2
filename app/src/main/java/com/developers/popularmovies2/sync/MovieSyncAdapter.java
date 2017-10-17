@@ -21,9 +21,11 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
+import com.developers.popularmovies2.BuildConfig;
 import com.developers.popularmovies2.MainActivity;
 import com.developers.popularmovies2.R;
 import com.developers.popularmovies2.data.DataContract;
+import com.developers.popularmovies2.util.Constants;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -39,119 +41,173 @@ import java.util.Vector;
 /**
  * Created by Amanjeet Singh on 19-Nov-16.
  */
-public class MovieSyncAdapter extends AbstractThreadedSyncAdapter{
-    private static final int SYNC_INTERVAL=600;
-    private static final int FLEX_TIME=SYNC_INTERVAL/3;
-    private static final String TAG=MovieSyncAdapter.class.getSimpleName();
-    String poster,title,overview,release,rating,bannerimg,id,trailers,reviews,apikey;
+public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
+    private static final int SYNC_INTERVAL = 600;
+    private static final int FLEX_TIME = SYNC_INTERVAL / 3;
+    private static final String TAG = MovieSyncAdapter.class.getSimpleName();
     private static final int MOVIES_NOTIFICATION_ID = 3000;
-    Vector<ContentValues> cVVector;
+    private String poster, title, overview, release, rating, bannerimg, id, trailers, reviews, apikey;
+    private Vector<ContentValues> cVVector;
+    private Uri uri, trailerUri,posterUri,bannerUri;
 
 
     public MovieSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
     }
 
+    public static void configurePeriodicSync(Context context, int syncInterval, int flexTime) {
+        Account account = getSyncAccount(context);
+        String authority = "com.developers.popularmovies2";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            SyncRequest request = new SyncRequest.Builder().
+                    syncPeriodic(syncInterval, flexTime).
+                    setSyncAdapter(account, authority).
+                    setExtras(new Bundle()).build();
+            ContentResolver.requestSync(request);
+        } else {
+            ContentResolver.addPeriodicSync(account,
+                    authority, new Bundle(), syncInterval);
+        }
+    }
+
+    public static Account getSyncAccount(Context context) {
+        AccountManager accountManager = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
+        Account newAccount = new Account("PopularMovies2", "popularmovies2.developers.com");
+        if (null == accountManager.getPassword(newAccount)) {
+            if (!accountManager.addAccountExplicitly(newAccount, "", null)) {
+                return null;
+            }
+            onAccountCreated(newAccount, context);
+        }
+        return newAccount;
+    }
+
+    private static void onAccountCreated(Account newAccount, Context context) {
+        MovieSyncAdapter.configurePeriodicSync(context, SYNC_INTERVAL, FLEX_TIME);
+        ContentResolver.setSyncAutomatically(newAccount, "com.developers.popularmovies2", true);
+        syncImmediately(context);
+    }
+
+    public static void syncImmediately(Context context) {
+        Log.d(TAG, "in sync immediate");
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+        ContentResolver.requestSync(getSyncAccount(context), "com.developers.popularmovies2", bundle);
+    }
+
+    public static void initializeSyncAdapter(Context context) {
+        getSyncAccount(context);
+    }
+
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-        Log.d(TAG,"in on perform sync");
-        try{
-            SharedPreferences preferences= getContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
-            String sort=preferences.getString("order","0");
-            String choice=null;
-            Log.d(TAG," "+sort);
-            if(sort.equals("0")){
-                choice="popular";
+        Log.d(TAG, "in on perform sync");
+        try {
+            SharedPreferences preferences = getContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+            String sort = preferences.getString("order", "0");
+            String choice = null;
+            Log.d(TAG, " " + sort);
+            if (sort.equals("0")) {
+                choice = "popular";
             }
-            if(sort.equals("1")){
-                choice="top_rated";
+            if (sort.equals("1")) {
+                choice = "top_rated";
             }
-            Log.d(TAG," "+choice);
-            String url1="http://api.themoviedb.org/3/movie/"+choice+"?api_key=********************************";//enter your apikey here
-            Log.d(TAG,url1);
-            URL url=new URL(url1);
-            HttpURLConnection conn= (HttpURLConnection) url.openConnection();
-            InputStream in=conn.getInputStream();
-            BufferedReader buff=new BufferedReader(new InputStreamReader(in));
-            StringBuilder json=new StringBuilder();
+            Log.d(TAG, " " + choice);
+            uri = Uri.parse(Constants.BASE_URL).buildUpon()
+                    .appendPath(choice)
+                    .appendQueryParameter(getContext().getString(R.string.api_key_attr),
+                            BuildConfig.MOVIE_KEY).build();
+            Log.d(TAG, uri.toString());
+            URL url = new URL(uri.toString());
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            InputStream in = conn.getInputStream();
+            BufferedReader buff = new BufferedReader(new InputStreamReader(in));
+            StringBuilder json = new StringBuilder();
             String result;
-            while((result=buff.readLine())!=null){
+            while ((result = buff.readLine()) != null) {
                 json.append(result);
             }
-            if(json.length()!=0){
-                JSONObject res=new JSONObject(json.toString());
-                JSONArray arr=res.getJSONArray("results");
+            if (json.length() != 0) {
+                JSONObject res = new JSONObject(json.toString());
+                JSONArray arr = res.getJSONArray("results");
                 cVVector = new Vector<>(arr.length());
-                for(int i=0;i<arr.length();i++){
-                    JSONObject movie=arr.getJSONObject(i);
-                    poster="http://image.tmdb.org/t/p/w185"+movie.getString("poster_path");
-                    title=movie.getString("original_title");
-                    overview=movie.getString("overview");
-                    release=movie.getString("release_date");
-                    rating=movie.getString("vote_average");
-                    bannerimg="http://image.tmdb.org/t/p/w185"+movie.getString("backdrop_path");
-                    id=movie.getString("id");
-                    Log.d("dataaaaaaa---->> ","img and title "+poster+" "+title);
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject movie = arr.getJSONObject(i);
+                    posterUri=Uri.parse(Constants.IMAGE_BASE_URL).buildUpon()
+                            .appendEncodedPath(movie.getString("poster_path"))
+                            .build();
+                    Log.d(TAG,posterUri.toString());
+                    title = movie.getString("original_title");
+                    overview = movie.getString("overview");
+                    release = movie.getString("release_date");
+                    rating = movie.getString("vote_average");
+                    bannerUri=Uri.parse(Constants.IMAGE_BASE_URL).buildUpon()
+                            .appendEncodedPath(movie.getString("backdrop_path"))
+                            .build();
+                    Log.d(TAG,bannerUri.toString());
+                    id = movie.getString("id");
                     fetchTrailers(id);
                     fetchReviews(id);
-                    Log.d(TAG,"JSON of trailers "+trailers);
-                    Log.d(TAG,"JSON of Reviews "+reviews);
-                    ContentValues movievalues=new ContentValues();
-                    switch (sort){
+                    Log.d(TAG, "JSON of trailers " + trailers);
+                    Log.d(TAG, "JSON of Reviews " + reviews);
+                    ContentValues movievalues = new ContentValues();
+                    switch (sort) {
                         case "0":
-                            movievalues.put(DataContract.Popular.COLUMN_ID,id);
-                            movievalues.put(DataContract.Popular.COLUMN_POSTER,poster);
-                            movievalues.put(DataContract.Popular.COLUMN_TITLE,title);
-                            movievalues.put(DataContract.Popular.COLUMN_OVERVIEW,overview);
-                            movievalues.put(DataContract.Popular.COLUMN_RELEASE_DATE,release);
-                            movievalues.put(DataContract.Popular.COLUMN_VOTE_AVERAGE,rating);
-                            movievalues.put(DataContract.Popular.COLUMN_TRAILER,trailers);
-                            movievalues.put(DataContract.Popular.COLUMN_REVIEWS,reviews);
+                            movievalues.put(DataContract.Popular.COLUMN_ID, id);
+                            movievalues.put(DataContract.Popular.COLUMN_POSTER, posterUri.toString());
+                            movievalues.put(DataContract.Popular.COLUMN_TITLE, title);
+                            movievalues.put(DataContract.Popular.COLUMN_OVERVIEW, overview);
+                            movievalues.put(DataContract.Popular.COLUMN_RELEASE_DATE, release);
+                            movievalues.put(DataContract.Popular.COLUMN_VOTE_AVERAGE, rating);
+                            movievalues.put(DataContract.Popular.COLUMN_TRAILER, trailers);
+                            movievalues.put(DataContract.Popular.COLUMN_REVIEWS, reviews);
+                            movievalues.put(DataContract.Popular.COLUMN_BACKDROP_IMG,bannerUri.toString());
                             break;
                         case "1":
-                            movievalues.put(DataContract.Rated.COLUMN_ID,id);
-                            movievalues.put(DataContract.Rated.COLUMN_POSTER,poster);
-                            movievalues.put(DataContract.Rated.COLUMN_TITLE,title);
-                            movievalues.put(DataContract.Rated.COLUMN_OVERVIEW,overview);
-                            movievalues.put(DataContract.Rated.COLUMN_RELEASE_DATE,release);
-                            movievalues.put(DataContract.Rated.COLUMN_VOTE_AVERAGE,rating);
-                            movievalues.put(DataContract.Rated.COLUMN_TRAILER,trailers);
-                            movievalues.put(DataContract.Rated.COLUMN_REVIEWS,reviews);
+                            movievalues.put(DataContract.Rated.COLUMN_ID, id);
+                            movievalues.put(DataContract.Rated.COLUMN_POSTER, poster);
+                            movievalues.put(DataContract.Rated.COLUMN_TITLE, title);
+                            movievalues.put(DataContract.Rated.COLUMN_OVERVIEW, overview);
+                            movievalues.put(DataContract.Rated.COLUMN_RELEASE_DATE, release);
+                            movievalues.put(DataContract.Rated.COLUMN_VOTE_AVERAGE, rating);
+                            movievalues.put(DataContract.Rated.COLUMN_TRAILER, trailers);
+                            movievalues.put(DataContract.Rated.COLUMN_REVIEWS, reviews);
+                            movievalues.put(DataContract.Rated.COLUMN_BACKDROP_IMG,bannerUri.toString());
                             break;
-                        default: break;
+                        default:
+                            break;
                     }
                     cVVector.add(movievalues);
                     //conn.disconnect();
                 }
             }
-            int insert=0;
-            if(cVVector.size()>0){
-                Log.d(TAG,"Size is---------> "+cVVector.size());
-                ContentValues[] carray=new ContentValues[cVVector.size()];
+            int insert = 0;
+            if (cVVector.size() > 0) {
+                ContentValues[] carray = new ContentValues[cVVector.size()];
                 cVVector.toArray(carray);
-                switch(sort){
+                switch (sort) {
                     case "0":
-                        getContext().getContentResolver().delete(DataContract.Popular.CONTENT_URI,null,null);
+                        getContext().getContentResolver().delete(DataContract.Popular.CONTENT_URI, null, null);
                         insert = getContext().getContentResolver().bulkInsert(DataContract.Popular.CONTENT_URI, carray);
                         break;
                     case "1":
-                        getContext().getContentResolver().delete(DataContract.Rated.CONTENT_URI,null,null);
-                        insert=getContext().getContentResolver().bulkInsert(DataContract.Rated.CONTENT_URI,carray);
+                        getContext().getContentResolver().delete(DataContract.Rated.CONTENT_URI, null, null);
+                        insert = getContext().getContentResolver().bulkInsert(DataContract.Rated.CONTENT_URI, carray);
                         break;
                 }
-                Log.d("val-------------> ","dekho  "+insert);
             }
             notifyMovies();
             conn.disconnect();
-        }
-        catch (Exception e){
-          e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     private void notifyMovies() {
-        Context context=getContext();
-        String title ="Popular Movies 2";
+        Context context = getContext();
+        String title = "Popular Movies 2";
         int iconId = R.mipmap.ic_launcher;
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
@@ -173,89 +229,55 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter{
     }
 
     private void fetchReviews(String id) {
-        try{
-            String url2="http://api.themoviedb.org/3/movie/"+id+"/reviews?api_key=***************************";// enter your apikey here
-            URL url3=new URL(url2);
-            HttpURLConnection con2= (HttpURLConnection) url3.openConnection();
-            InputStream inn=con2.getInputStream();
-            BufferedReader bu=new BufferedReader(new InputStreamReader(inn));
-            StringBuilder sb1=new StringBuilder();
+        try {
+            // enter your apikey here
+            Uri reviewsUri = Uri.parse(Constants.BASE_URL).buildUpon()
+                    .appendPath(id)
+                    .appendPath(getContext().getString(R.string.reviews_attr))
+                    .appendQueryParameter(getContext().getString(R.string.api_key_attr), BuildConfig.MOVIE_KEY)
+                    .build();
+            URL url3 = new URL(reviewsUri.toString());
+            Log.d(TAG, reviewsUri.toString());
+            HttpURLConnection con2 = (HttpURLConnection) url3.openConnection();
+            InputStream inn = con2.getInputStream();
+            BufferedReader bu = new BufferedReader(new InputStreamReader(inn));
+            StringBuilder sb1 = new StringBuilder();
             String res;
-            while((res=bu.readLine())!=null){
+            while ((res = bu.readLine()) != null) {
                 sb1.append(res);
             }
-            JSONObject o=new JSONObject(sb1.toString());
-            JSONArray a=o.getJSONArray("results");
-            reviews=a.toString();
-        }
-        catch (Exception e){
-            Log.d(TAG,"Exception in fetching reviews");
+            JSONObject o = new JSONObject(sb1.toString());
+            JSONArray a = o.getJSONArray("results");
+            reviews = a.toString();
+        } catch (Exception e) {
+            Log.d(TAG, "Exception in fetching reviews");
         }
 
     }
 
     private void fetchTrailers(String id) {
 
-    try{
-        String stringurl="http://api.themoviedb.org/3/movie/"+id+"/videos?api_key=******************************";//enter your apikey here
-        URL url2=new URL(stringurl);
-        HttpURLConnection con1= (HttpURLConnection) url2.openConnection();
-        InputStream is=con1.getInputStream();
-        BufferedReader buff=new BufferedReader(new InputStreamReader(is));
-        StringBuilder sb=new StringBuilder();
-        String rs;
-        while((rs=buff.readLine())!=null){
-            sb.append(rs);
-        }
-        JSONObject obj=new JSONObject(sb.toString());
-        JSONArray ar=obj.getJSONArray("results");
-        trailers=ar.toString();
-    }
-    catch(Exception e){
-        Log.d(TAG,"Exception in trailer fetching");
-    }
-    }
-
-    public static void configurePeriodicSync(Context context, int syncInterval, int flexTime){
-        Account account=getSyncAccount(context);
-        String authority="com.developers.popularmovies2";
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            SyncRequest request = new SyncRequest.Builder().
-                    syncPeriodic(syncInterval, flexTime).
-                    setSyncAdapter(account, authority).
-                    setExtras(new Bundle()).build();
-            ContentResolver.requestSync(request);
-        } else {
-            ContentResolver.addPeriodicSync(account,
-                    authority, new Bundle(), syncInterval);
-        }
-    }
-    public static Account getSyncAccount(Context context){
-        AccountManager accountManager= (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
-        Account newAccount=new Account("PopularMovies2","popularmovies2.developers.com");
-        if(null==accountManager.getPassword(newAccount)){
-            if (!accountManager.addAccountExplicitly(newAccount, "", null)) {
-                return null;
+        try {
+            trailerUri = Uri.parse(Constants.BASE_URL).buildUpon()
+                    .appendPath(id)
+                    .appendPath(getContext().getString(R.string.trailer_attr))
+                    .appendQueryParameter(getContext().getString(R.string.api_key_attr),
+                            BuildConfig.MOVIE_KEY).build();
+            Log.d(TAG, trailerUri.toString());
+            URL url2 = new URL(trailerUri.toString());
+            HttpURLConnection con1 = (HttpURLConnection) url2.openConnection();
+            InputStream is = con1.getInputStream();
+            BufferedReader buff = new BufferedReader(new InputStreamReader(is));
+            StringBuilder sb = new StringBuilder();
+            String rs;
+            while ((rs = buff.readLine()) != null) {
+                sb.append(rs);
             }
-           onAccountCreated(newAccount,context);
+            JSONObject obj = new JSONObject(sb.toString());
+            JSONArray ar = obj.getJSONArray("results");
+            trailers = ar.toString();
+        } catch (Exception e) {
+            Log.d(TAG, "Exception in trailer fetching");
         }
-        return newAccount;
-    }
-
-    private static void onAccountCreated(Account newAccount, Context context) {
-        MovieSyncAdapter.configurePeriodicSync(context,SYNC_INTERVAL,FLEX_TIME);
-        ContentResolver.setSyncAutomatically(newAccount,"com.developers.popularmovies2",true);
-        syncImmediately(context);
-    }
-
-    public static void syncImmediately(Context context) {
-        Log.d(TAG,"in sync immediate");
-        Bundle bundle=new Bundle();
-        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL,true);
-        bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED,true);
-        ContentResolver.requestSync(getSyncAccount(context),"com.developers.popularmovies2",bundle);
-    }
-    public static void initializeSyncAdapter(Context context) {
-        getSyncAccount(context);
     }
 }

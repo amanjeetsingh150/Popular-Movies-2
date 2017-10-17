@@ -8,7 +8,7 @@
     android:orientation="horizontal">
     <fragment
         android:id="@+id/fragment_movies"
-        class="com.developers.popularmovies2.MovieGrid"
+        class="com.developers.popularmovies2.MainFragment"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="0.4"

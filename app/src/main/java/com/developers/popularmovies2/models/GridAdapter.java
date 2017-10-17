@@ -9,7 +9,7 @@ import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.developers.popularmovies2.MovieGrid;
+import com.developers.popularmovies2.MainFragment;
 import com.developers.popularmovies2.R;
 import com.squareup.picasso.Picasso;
 
@@ -33,8 +33,8 @@ public class GridAdapter extends CursorAdapter {
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         ViewHolder viewHolder=(ViewHolder)view.getTag();
-        viewHolder.t1.setText(cursor.getString(MovieGrid.COL_MOVIE_TITLE));
-        Picasso.with(context).load(cursor.getString(MovieGrid.COL_MOVIE_POSTER)).into(viewHolder.img);
+        viewHolder.t1.setText(cursor.getString(MainFragment.COL_MOVIE_TITLE));
+        Picasso.with(context).load(cursor.getString(MainFragment.COL_MOVIE_POSTER)).into(viewHolder.img);
     }
     public static class ViewHolder{
         public final TextView t1;
