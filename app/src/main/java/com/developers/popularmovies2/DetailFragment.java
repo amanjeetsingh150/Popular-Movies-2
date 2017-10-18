@@ -21,14 +21,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.developers.coolprogressviews.SimpleArcProgress;
 import com.developers.popularmovies2.adapters.ReviewsAdapter;
 import com.developers.popularmovies2.adapters.TrailersAdapter;
 import com.developers.popularmovies2.data.DataContract;
 import com.developers.popularmovies2.util.Constants;
 import com.github.ivbaranov.mfb.MaterialFavoriteButton;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -90,6 +93,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     TextView rate;
     @BindView(R.id.nested_scroll)
     NestedScrollView nested;
+    @BindView(R.id.image_progress_bar)
+    SimpleArcProgress progressBar;
     private Uri uri, trailerUri;
     private ArrayList<String> trailerList = new ArrayList<String>();
     private ArrayList<String> trailerUrlList = new ArrayList<String>();
@@ -205,50 +210,60 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             linearLayoutManager1.setOrientation(LinearLayoutManager.VERTICAL);
             reviewsRecyclerView.setLayoutManager(linearLayoutManager1);
             reviewsRecyclerView.setAdapter(reviewsAdapter);
-            favoritebutton.setOnFavoriteChangeListener(new MaterialFavoriteButton.OnFavoriteChangeListener() {
+//            favoritebutton.setOnFavoriteChangeListener(new MaterialFavoriteButton.OnFavoriteChangeListener() {
+//                @Override
+//                public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
+//                    Log.d(TAG, "Star clicked,,............");
+//                    if (favorite) {
+//                        ContentValues moviefavour = new ContentValues();
+//                        moviefavour.put(DataContract.Favourite.COLUMN_ID, data.getString(COL_MOVIE_ID));
+//                        moviefavour.put(DataContract.Favourite.COLUMN_TITLE, data.getString(COL_MOVIE_TITLE));
+//                        moviefavour.put(DataContract.Favourite.COLUMN_POSTER, data.getString(COL_MOVIE_POSTER));
+//                        moviefavour.put(DataContract.Favourite.COLUMN_RELEASE_DATE, data.getString(COL_RELEASE));
+//                        moviefavour.put(DataContract.Favourite.COLUMN_VOTE_AVERAGE, data.getString(COL_RATE));
+//                        moviefavour.put(DataContract.Favourite.COLUMN_OVERVIEW, data.getString(COL_OVERVIEW));
+//                        moviefavour.put(DataContract.Favourite.COLUMN_TRAILER, data.getString(COL_TRAILER));
+//                        moviefavour.put(DataContract.Favourite.COLUMN_REVIEWS, data.getString(COL_REVIEWS));
+//                        getActivity().getContentResolver().insert(DataContract.Favourite.CONTENT_URI, moviefavour);
+//                        Toast.makeText(getActivity(), "Added as Favourites", Toast.LENGTH_SHORT).show();
+//                        Set<String> idset = new HashSet<String>();
+//                        idset.add(data.getString(COL_MOVIE_ID));
+//                        SharedPreferences.Editor editor = preferences.edit();
+//                        editor.putStringSet("ids", idset);
+//                        editor.commit();
+//                    }
+//                    if (!favorite) {
+//                        String deleteid[] = {data.getString(COL_MOVIE_ID)};
+//                        getActivity().getContentResolver().delete(DataContract.Favourite.buildFavourIdUri(data.getString(COL_MOVIE_ID)), null, deleteid);
+//                        preferences = getActivity().getSharedPreferences("favourRecord", Context.MODE_PRIVATE);
+//                        Set<String> idvals = preferences.getStringSet("ids", defaultids);
+//                        if (idvals.contains(data.getString(COL_MOVIE_ID))) {
+//                            idvals.remove(data.getString(COL_MOVIE_ID));
+//                        }
+//                        Set<String> newvals = new HashSet<String>();
+//                        Iterator itarator = idvals.iterator();
+//                        while (itarator.hasNext()) {
+//                            String vals = (String) itarator.next();
+//                            newvals.add(vals);
+//                        }
+//                        SharedPreferences.Editor editor = preferences.edit();
+//                        editor.putStringSet("ïds", newvals);
+//                        editor.commit();
+//                        Toast.makeText(getActivity(), "Removed from the Favourites", Toast.LENGTH_SHORT).show();
+//                    }
+//                }
+//            });
+            Picasso.with(getActivity()).load(bannerImg).into(barimage, new Callback() {
                 @Override
-                public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
-                    Log.d(TAG, "Star clicked,,............");
-                    if (favorite) {
-                        ContentValues moviefavour = new ContentValues();
-                        moviefavour.put(DataContract.Favourite.COLUMN_ID, data.getString(COL_MOVIE_ID));
-                        moviefavour.put(DataContract.Favourite.COLUMN_TITLE, data.getString(COL_MOVIE_TITLE));
-                        moviefavour.put(DataContract.Favourite.COLUMN_POSTER, data.getString(COL_MOVIE_POSTER));
-                        moviefavour.put(DataContract.Favourite.COLUMN_RELEASE_DATE, data.getString(COL_RELEASE));
-                        moviefavour.put(DataContract.Favourite.COLUMN_VOTE_AVERAGE, data.getString(COL_RATE));
-                        moviefavour.put(DataContract.Favourite.COLUMN_OVERVIEW, data.getString(COL_OVERVIEW));
-                        moviefavour.put(DataContract.Favourite.COLUMN_TRAILER, data.getString(COL_TRAILER));
-                        moviefavour.put(DataContract.Favourite.COLUMN_REVIEWS, data.getString(COL_REVIEWS));
-                        getActivity().getContentResolver().insert(DataContract.Favourite.CONTENT_URI, moviefavour);
-                        Toast.makeText(getActivity(), "Added as Favourites", Toast.LENGTH_SHORT).show();
-                        Set<String> idset = new HashSet<String>();
-                        idset.add(data.getString(COL_MOVIE_ID));
-                        SharedPreferences.Editor editor = preferences.edit();
-                        editor.putStringSet("ids", idset);
-                        editor.commit();
-                    }
-                    if (!favorite) {
-                        String deleteid[] = {data.getString(COL_MOVIE_ID)};
-                        getActivity().getContentResolver().delete(DataContract.Favourite.buildFavourIdUri(data.getString(COL_MOVIE_ID)), null, deleteid);
-                        preferences = getActivity().getSharedPreferences("favourRecord", Context.MODE_PRIVATE);
-                        Set<String> idvals = preferences.getStringSet("ids", defaultids);
-                        if (idvals.contains(data.getString(COL_MOVIE_ID))) {
-                            idvals.remove(data.getString(COL_MOVIE_ID));
-                        }
-                        Set<String> newvals = new HashSet<String>();
-                        Iterator itarator = idvals.iterator();
-                        while (itarator.hasNext()) {
-                            String vals = (String) itarator.next();
-                            newvals.add(vals);
-                        }
-                        SharedPreferences.Editor editor = preferences.edit();
-                        editor.putStringSet("ïds", newvals);
-                        editor.commit();
-                        Toast.makeText(getActivity(), "Removed from the Favourites", Toast.LENGTH_SHORT).show();
-                    }
+                public void onSuccess() {
+                    progressBar.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onError() {
+
                 }
             });
-            Picasso.with(getActivity()).load(bannerImg).into(barimage);
             Picasso.with(getActivity()).load(imgpath).into(poster);
             title.setText(ti);
             release.setText(releaseDate);
