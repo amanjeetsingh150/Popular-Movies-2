@@ -22,9 +22,12 @@ import android.widget.GridView;
 import android.widget.ListView;
 
 import com.developers.popularmovies2.data.DataContract;
-import com.developers.popularmovies2.models.GridAdapter;
+import com.developers.popularmovies2.adapters.GridAdapter;
 import com.developers.popularmovies2.sync.MovieSyncAdapter;
 import com.developers.popularmovies2.util.Constants;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 
 /**
@@ -32,6 +35,7 @@ import com.developers.popularmovies2.util.Constants;
  */
 public class MainFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor>, SharedPreferences.OnSharedPreferenceChangeListener {
+
     public static final int COL_ID = 0;
     public static final int COL_MOVIE_ID = 1;
     public static final int COL_MOVIE_TITLE = 2;
@@ -51,9 +55,9 @@ public class MainFragment extends Fragment implements
             DataContract.Rated.COLUMN_POSTER
     };
     private static final int MOVIES_LOADER = 0;
-    String sort;
-    private GridView movieGrid;
-    private Context context;
+    private String sort;
+    @BindView(R.id.movie_grid)
+    GridView movieGrid;
     private Cursor cur;
     private GridAdapter gridAdapter;
     private int mPosition = ListView.INVALID_POSITION;
@@ -70,11 +74,10 @@ public class MainFragment extends Fragment implements
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_movie_grid, container, false);
-        movieGrid = (GridView) v.findViewById(R.id.movie_grid);
+        ButterKnife.bind(this, v);
         preferences = getActivity().getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
         preferences.registerOnSharedPreferenceChangeListener(this);
         sort = preferences.getString("order", "0");
-        Log.d(TAG, "sort order " + sort);
         Uri movieUri = null;
         switch (sort) {
             case "0":
@@ -87,11 +90,9 @@ public class MainFragment extends Fragment implements
                 movieUri = DataContract.Favourite.CONTENT_URI;
                 break;
         }
-        Log.d("MainFragment", "doingsync start");
         if (!sort.equals("2")) {
             MovieSyncAdapter.syncImmediately(getActivity());
         }
-        Log.d(TAG, " " + movieUri);
         switch (sort) {
             case "0":
                 cur = getActivity().getContentResolver().query(movieUri, MOVIE_COLUMNS, null, null, null);

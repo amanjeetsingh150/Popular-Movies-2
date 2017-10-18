@@ -1,16 +1,16 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.developers.popularmovies2.MainFragment">
 
-    <!-- TODO: Update blank fragment layout -->
     <GridView
         android:id="@+id/movie_grid"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:verticalSpacing="0dp"
         android:horizontalSpacing="0dp"
+        android:numColumns="2"
         android:stretchMode="columnWidth"
-        android:numColumns="2"/>
-</FrameLayout>
+        android:verticalSpacing="0dp" />
+
+</LinearLayout>

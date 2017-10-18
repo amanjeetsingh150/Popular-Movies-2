@@ -9,4 +9,19 @@
     <string name="overview_text">Overview:</string>
     <string name="reviews_text">Reviews:</string>
     <string name="trailers_text">Trailers:</string>
+    <string name="popular_attr">popular</string>
+    <string name="top_rated_attr">top_rated</string>
+    <string name="preferences_key">order</string>
+    <string name="attr_results">results</string>
+    <string name="attr_poster_path">poster_path</string>
+    <string name="attr_title">original_title</string>
+    <string name="attr_overview">overview</string>
+    <string name="attr_release">release_date</string>
+    <string name="attr_vote">vote_average</string>
+    <string name="backdrop_attr">backdrop_path</string>
+    <string name="id_attr">id</string>
+    <string name="notification_text">Do not miss these Movies. Click now to see It.</string>
+    <string name="notification_title">Popular movies 2</string>
+    <string name="content_authority">com.developers.popularmovies2</string>
+    <string name="sync_account_type">popularmovies2.developers.com</string>
 </resources>

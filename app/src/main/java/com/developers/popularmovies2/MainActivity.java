@@ -51,7 +51,8 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
             args.putParcelable(DetailFragment.DETAIL, dataUri);
             DetailFragment detailFragment = new DetailFragment();
             detailFragment.setArguments(args);
-            getSupportFragmentManager().beginTransaction().replace(R.id.movie_detail_container, detailFragment, DETAIL_TAG).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.movie_detail_container,
+                    detailFragment, DETAIL_TAG).commit();
         } else {
             Intent intent = new Intent(this, DetailActivity.class).setData(dataUri);
             startActivity(intent);

@@ -33,7 +33,7 @@ public class MoviesDB extends SQLiteOpenHelper {
                 DataContract.Favourite._ID + " INTEGER PRIMARY KEY," +
                 DataContract.Favourite.COLUMN_ID + " INTEGER NOT NULL, " +
                 DataContract.Favourite.COLUMN_TITLE + " TEXT NOT NULL, " +
-                DataContract.Favourite.COLUMN_POSTER + " TEXT NOT NULL, " +
+                DataContract.Favourite.COLUMN_POSTER + " TEXT NULL, " +
                 DataContract.Favourite.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
                 DataContract.Favourite.COLUMN_VOTE_AVERAGE + " REAL NOT NULL, " +
                 DataContract.Favourite.COLUMN_OVERVIEW + " TEXT NOT NULL, " +
@@ -45,13 +45,13 @@ public class MoviesDB extends SQLiteOpenHelper {
                 DataContract.Rated._ID + " INTEGER PRIMARY KEY," +
                 DataContract.Rated.COLUMN_ID + " INTEGER NOT NULL, " +
                 DataContract.Rated.COLUMN_TITLE + " TEXT NOT NULL, " +
-                DataContract.Rated.COLUMN_POSTER + " TEXT NOT NULL, " +
+                DataContract.Rated.COLUMN_POSTER + " TEXT, " +
                 DataContract.Rated.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
                 DataContract.Rated.COLUMN_VOTE_AVERAGE + " REAL NOT NULL, " +
                 DataContract.Rated.COLUMN_OVERVIEW + " TEXT NOT NULL, " +
                 DataContract.Rated.COLUMN_TRAILER + " TEXT NOT NULL," +
                 DataContract.Rated.COLUMN_REVIEWS + " TEXT NOT NULL," +
-                DataContract.Favourite.COLUMN_BACKDROP_IMG+ " TEXT NOT NULL"+
+                DataContract.Rated.COLUMN_BACKDROP_IMG+ " TEXT NOT NULL"+
                 " );";
         db.execSQL(SQL_CREATE_POPULAR_TABLE);
         db.execSQL(SQL_CREATE_FAVOURITE_TABLE);

@@ -46,9 +46,9 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final int FLEX_TIME = SYNC_INTERVAL / 3;
     private static final String TAG = MovieSyncAdapter.class.getSimpleName();
     private static final int MOVIES_NOTIFICATION_ID = 3000;
-    private String poster, title, overview, release, rating, bannerimg, id, trailers, reviews, apikey;
+    private String title, overview, release, rating, id, trailers, reviews;
     private Vector<ContentValues> cVVector;
-    private Uri uri, trailerUri,posterUri,bannerUri;
+    private Uri uri, trailerUri, posterUri, bannerUri;
 
 
     public MovieSyncAdapter(Context context, boolean autoInitialize) {
@@ -57,7 +57,7 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static void configurePeriodicSync(Context context, int syncInterval, int flexTime) {
         Account account = getSyncAccount(context);
-        String authority = "com.developers.popularmovies2";
+        String authority = context.getString(R.string.content_authority);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             SyncRequest request = new SyncRequest.Builder().
                     syncPeriodic(syncInterval, flexTime).
@@ -72,7 +72,7 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static Account getSyncAccount(Context context) {
         AccountManager accountManager = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
-        Account newAccount = new Account("PopularMovies2", "popularmovies2.developers.com");
+        Account newAccount = new Account("PopularMovies2", context.getString(R.string.sync_account_type));
         if (null == accountManager.getPassword(newAccount)) {
             if (!accountManager.addAccountExplicitly(newAccount, "", null)) {
                 return null;
@@ -84,7 +84,7 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
 
     private static void onAccountCreated(Account newAccount, Context context) {
         MovieSyncAdapter.configurePeriodicSync(context, SYNC_INTERVAL, FLEX_TIME);
-        ContentResolver.setSyncAutomatically(newAccount, "com.developers.popularmovies2", true);
+        ContentResolver.setSyncAutomatically(newAccount, context.getString(R.string.content_authority), true);
         syncImmediately(context);
     }
 
@@ -93,7 +93,7 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
         Bundle bundle = new Bundle();
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-        ContentResolver.requestSync(getSyncAccount(context), "com.developers.popularmovies2", bundle);
+        ContentResolver.requestSync(getSyncAccount(context), context.getString(R.string.content_authority), bundle);
     }
 
     public static void initializeSyncAdapter(Context context) {
@@ -102,19 +102,18 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-        Log.d(TAG, "in on perform sync");
         try {
-            SharedPreferences preferences = getContext().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
-            String sort = preferences.getString("order", "0");
+            SharedPreferences preferences = getContext()
+                    .getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
+            String sort = preferences
+                    .getString(getContext().getString(R.string.preferences_key), "0");
             String choice = null;
-            Log.d(TAG, " " + sort);
             if (sort.equals("0")) {
-                choice = "popular";
+                choice = getContext().getString(R.string.popular_attr);
             }
             if (sort.equals("1")) {
-                choice = "top_rated";
+                choice = getContext().getString(R.string.top_rated_attr);
             }
-            Log.d(TAG, " " + choice);
             uri = Uri.parse(Constants.BASE_URL).buildUpon()
                     .appendPath(choice)
                     .appendQueryParameter(getContext().getString(R.string.api_key_attr),
@@ -131,23 +130,25 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
             }
             if (json.length() != 0) {
                 JSONObject res = new JSONObject(json.toString());
-                JSONArray arr = res.getJSONArray("results");
+                JSONArray arr = res.getJSONArray(getContext().getString(R.string.attr_results));
                 cVVector = new Vector<>(arr.length());
                 for (int i = 0; i < arr.length(); i++) {
                     JSONObject movie = arr.getJSONObject(i);
-                    posterUri=Uri.parse(Constants.IMAGE_BASE_URL).buildUpon()
-                            .appendEncodedPath(movie.getString("poster_path"))
+                    posterUri = Uri.parse(Constants.IMAGE_BASE_URL).buildUpon()
+                            .appendEncodedPath(movie.getString(getContext()
+                                    .getString(R.string.attr_poster_path)))
                             .build();
-                    Log.d(TAG,posterUri.toString());
-                    title = movie.getString("original_title");
-                    overview = movie.getString("overview");
-                    release = movie.getString("release_date");
-                    rating = movie.getString("vote_average");
-                    bannerUri=Uri.parse(Constants.IMAGE_BASE_URL).buildUpon()
-                            .appendEncodedPath(movie.getString("backdrop_path"))
+                    Log.d(TAG, posterUri.toString());
+                    title = movie.getString(getContext().getString(R.string.attr_title));
+                    overview = movie.getString(getContext().getString(R.string.attr_overview));
+                    release = movie.getString(getContext().getString(R.string.attr_release));
+                    rating = movie.getString(getContext().getString(R.string.attr_vote));
+                    bannerUri = Uri.parse(Constants.IMAGE_BASE_URL).buildUpon()
+                            .appendEncodedPath(movie.getString(getContext()
+                                    .getString(R.string.backdrop_attr)))
                             .build();
-                    Log.d(TAG,bannerUri.toString());
-                    id = movie.getString("id");
+                    Log.d(TAG, bannerUri.toString());
+                    id = movie.getString(getContext().getString(R.string.id_attr));
                     fetchTrailers(id);
                     fetchReviews(id);
                     Log.d(TAG, "JSON of trailers " + trailers);
@@ -163,18 +164,18 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
                             movievalues.put(DataContract.Popular.COLUMN_VOTE_AVERAGE, rating);
                             movievalues.put(DataContract.Popular.COLUMN_TRAILER, trailers);
                             movievalues.put(DataContract.Popular.COLUMN_REVIEWS, reviews);
-                            movievalues.put(DataContract.Popular.COLUMN_BACKDROP_IMG,bannerUri.toString());
+                            movievalues.put(DataContract.Popular.COLUMN_BACKDROP_IMG, bannerUri.toString());
                             break;
                         case "1":
                             movievalues.put(DataContract.Rated.COLUMN_ID, id);
-                            movievalues.put(DataContract.Rated.COLUMN_POSTER, poster);
+                            movievalues.put(DataContract.Rated.COLUMN_POSTER, posterUri.toString());
                             movievalues.put(DataContract.Rated.COLUMN_TITLE, title);
                             movievalues.put(DataContract.Rated.COLUMN_OVERVIEW, overview);
                             movievalues.put(DataContract.Rated.COLUMN_RELEASE_DATE, release);
                             movievalues.put(DataContract.Rated.COLUMN_VOTE_AVERAGE, rating);
                             movievalues.put(DataContract.Rated.COLUMN_TRAILER, trailers);
                             movievalues.put(DataContract.Rated.COLUMN_REVIEWS, reviews);
-                            movievalues.put(DataContract.Rated.COLUMN_BACKDROP_IMG,bannerUri.toString());
+                            movievalues.put(DataContract.Rated.COLUMN_BACKDROP_IMG, bannerUri.toString());
                             break;
                         default:
                             break;
@@ -207,13 +208,13 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
 
     private void notifyMovies() {
         Context context = getContext();
-        String title = "Popular Movies 2";
+        String title = getContext().getString(R.string.notification_title);
         int iconId = R.mipmap.ic_launcher;
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(context)
                         .setSmallIcon(iconId)
                         .setContentTitle(title)
-                        .setContentText("Don't miss these Movies. Click now to see It.");
+                        .setContentText(getContext().getString(R.string.notification_text));
         Intent resultIntent = new Intent(getContext(), MainActivity.class);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
         stackBuilder.addNextIntent(resultIntent);
@@ -230,7 +231,6 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
 
     private void fetchReviews(String id) {
         try {
-            // enter your apikey here
             Uri reviewsUri = Uri.parse(Constants.BASE_URL).buildUpon()
                     .appendPath(id)
                     .appendPath(getContext().getString(R.string.reviews_attr))
@@ -247,7 +247,7 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
                 sb1.append(res);
             }
             JSONObject o = new JSONObject(sb1.toString());
-            JSONArray a = o.getJSONArray("results");
+            JSONArray a = o.getJSONArray(getContext().getString(R.string.attr_results));
             reviews = a.toString();
         } catch (Exception e) {
             Log.d(TAG, "Exception in fetching reviews");
@@ -274,7 +274,7 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
                 sb.append(rs);
             }
             JSONObject obj = new JSONObject(sb.toString());
-            JSONArray ar = obj.getJSONArray("results");
+            JSONArray ar = obj.getJSONArray(getContext().getString(R.string.attr_results));
             trailers = ar.toString();
         } catch (Exception e) {
             Log.d(TAG, "Exception in trailer fetching");
