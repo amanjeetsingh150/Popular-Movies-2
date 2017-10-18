@@ -55,9 +55,9 @@ public class MainFragment extends Fragment implements
             DataContract.Rated.COLUMN_POSTER
     };
     private static final int MOVIES_LOADER = 0;
-    private String sort;
     @BindView(R.id.movie_grid)
     GridView movieGrid;
+    private String sort;
     private Cursor cur;
     private GridAdapter gridAdapter;
     private int mPosition = ListView.INVALID_POSITION;
@@ -77,7 +77,7 @@ public class MainFragment extends Fragment implements
         ButterKnife.bind(this, v);
         preferences = getActivity().getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
         preferences.registerOnSharedPreferenceChangeListener(this);
-        sort = preferences.getString("order", "0");
+        sort = preferences.getString(getActivity().getString(R.string.preferences_key), "0");
         Uri movieUri = null;
         switch (sort) {
             case "0":
@@ -111,24 +111,25 @@ public class MainFragment extends Fragment implements
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor c = (Cursor) parent.getItemAtPosition(position);
                 String movieid = c.getString(COL_MOVIE_ID);
-                String sorte = preferences.getString("order", "0");
-                Log.d(TAG, "val of sort " + sorte);
-                Uri movieuri = null;
-                switch (sorte) {
+                String sortKey = preferences
+                        .getString(getActivity().getString(R.string.preferences_key), "0");
+                Log.d(TAG, "val of sort " + sortKey);
+                Uri movieUri = null;
+                switch (sortKey) {
                     case "0":
-                        movieuri = DataContract.Popular.buildPopularIdUri(movieid);
-                        Log.d(TAG, "URI is " + movieuri);
+                        movieUri = DataContract.Popular.buildPopularIdUri(movieid);
+                        Log.d(TAG, "URI is " + movieUri);
                         break;
                     case "1":
-                        movieuri = DataContract.Rated.buildRatedIDUri(movieid);
-                        Log.d(TAG, "URI is " + movieuri);
+                        movieUri = DataContract.Rated.buildRatedIDUri(movieid);
+                        Log.d(TAG, "URI is " + movieUri);
                         break;
                     case "2":
-                        movieuri = DataContract.Favourite.buildFavourIdUri(movieid);
-                        Log.d(TAG, "URI is " + movieuri);
+                        movieUri = DataContract.Favourite.buildFavourIdUri(movieid);
+                        Log.d(TAG, "URI is " + movieUri);
                         break;
                 }
-                ((Callback) getActivity()).onItemSelected(movieuri);
+                ((Callback) getActivity()).onItemSelected(movieUri);
             }
         });
         return v;
@@ -144,23 +145,26 @@ public class MainFragment extends Fragment implements
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             //popular
-            SharedPreferences preferences = getActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+            SharedPreferences preferences = getActivity()
+                    .getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("order", "0");
-            editor.commit();
+            editor.putString(getActivity().getString(R.string.preferences_key), "0");
+            editor.apply();
         }
         if (id == R.id.action_settings1) {
             //toprated
-            SharedPreferences preferences = getActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+            SharedPreferences preferences = getActivity()
+                    .getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("order", "1");
-            editor.commit();
+            editor.putString(getActivity().getString(R.string.preferences_key), "1");
+            editor.apply();
         }
         if (id == R.id.action_settings2) {
-            SharedPreferences preferences = getActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+            SharedPreferences preferences = getActivity()
+                    .getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = preferences.edit();
-            editor.putString("order", "2");
-            editor.commit();
+            editor.putString(getActivity().getString(R.string.preferences_key), "2");
+            editor.apply();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -187,7 +191,6 @@ public class MainFragment extends Fragment implements
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         SharedPreferences preferences = getActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
         String sort = preferences.getString("order", "0");
-        Log.d(TAG, "----> sort order " + sort);
         Uri movieUri = null;
         switch (sort) {
             case "0":

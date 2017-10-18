@@ -24,4 +24,5 @@
     <string name="notification_title">Popular movies 2</string>
     <string name="content_authority">com.developers.popularmovies2</string>
     <string name="sync_account_type">popularmovies2.developers.com</string>
+    <string name="add_to_favor_text">Add to Favorites:</string>
 </resources>
