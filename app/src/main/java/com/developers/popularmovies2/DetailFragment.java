@@ -29,6 +29,7 @@ import com.developers.coolprogressviews.SimpleArcProgress;
 import com.developers.popularmovies2.adapters.ReviewsAdapter;
 import com.developers.popularmovies2.adapters.TrailersAdapter;
 import com.developers.popularmovies2.data.DataContract;
+import com.developers.popularmovies2.data.MoviesDB;
 import com.developers.popularmovies2.util.Constants;
 import com.github.ivbaranov.mfb.MaterialFavoriteButton;
 import com.squareup.picasso.Callback;
@@ -95,6 +96,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     NestedScrollView nested;
     @BindView(R.id.image_progress_bar)
     SimpleArcProgress progressBar;
+    @BindView(R.id.favorite_material_button)
+    MaterialFavoriteButton favoriteButton;
     private Uri uri, trailerUri;
     private ArrayList<String> trailerList = new ArrayList<String>();
     private ArrayList<String> trailerUrlList = new ArrayList<String>();
@@ -102,9 +105,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private ArrayList<String> reviewAuthorList = new ArrayList<String>();
     private String bannerImg, rating, releaseDate;
     private String trailerjson, reviewsjson;
-    private MaterialFavoriteButton favoritebutton;
-    private SharedPreferences preferences;
-    private Set<String> defaultids = new HashSet<String>();
+    private JSONArray reviewJsonArray;
 
     public DetailFragment() {
         // Required empty public constructor
@@ -151,40 +152,37 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public void onLoadFinished(Loader<Cursor> loader, final Cursor data) {
         nested.setVisibility(View.VISIBLE);
         if (data == null)
-            Log.d(TAG, "SOME ERRORRRRRRRRRRRRRRR");
-        data.moveToFirst();
+            Log.d(TAG, "SOME ERROR");
+        if (data != null) {
+            data.moveToFirst();
+        }
         try {
-            String imgpath = data.getString(COL_MOVIE_POSTER);
-            Log.d(TAG, "path " + imgpath);
-            String ti = data.getString(COL_MOVIE_TITLE);
+            String imgPath = data.getString(COL_MOVIE_POSTER);
+            String movieTitle = data.getString(COL_MOVIE_TITLE);
             releaseDate = data.getString(COL_RELEASE);
             rating = data.getString(COL_RATE);
-            String ov = data.getString(COL_OVERVIEW);
+            String overviewText = data.getString(COL_OVERVIEW);
             bannerImg = data.getString(COL_BACKDROP_IMG);
             trailerjson = data.getString(COL_TRAILER);
             reviewsjson = data.getString(COL_REVIEWS);
-            Log.d(TAG, " " + trailerjson);
-            Log.d(TAG, " " + reviewsjson);
-            preferences = getActivity().getSharedPreferences("favourRecord", Context.MODE_PRIVATE);
-            Set<String> idvals = preferences.getStringSet("ids", defaultids);
-            if (idvals.size() != 0) {
-                if (idvals.contains(data.getString(COL_MOVIE_ID))) {
-                    favoritebutton.setFavorite(true, false);
-                }
+            boolean found = checkIfPresentInFavorites(data.getString(COL_MOVIE_ID));
+            if (found) {
+                favoriteButton.setFavorite(true, false);
             }
-            JSONArray trailjs = new JSONArray(trailerjson);
-            if (trailjs.length() == 0) {
-                trailerList.add("NOT AVAILABLE");
-                trailerUrlList.add("NOT AVAILABLE");
+            JSONArray trailerJsonArray = new JSONArray(trailerjson);
+            if (trailerJsonArray.length() == 0) {
+                trailerList.add(getActivity().getString(R.string.not_available_text));
+                trailerUrlList.add(getActivity().getString(R.string.not_available_text));
             }
-            for (int i = 0; i < trailjs.length(); i++) {
-                JSONObject obj = trailjs.getJSONObject(i);
-                String key = obj.getString("key");
+            for (int i = 0; i < trailerJsonArray.length(); i++) {
+                JSONObject obj = trailerJsonArray.getJSONObject(i);
+                String key = obj.getString(getActivity().getString(R.string.key_attr));
                 trailerUri = Uri.parse(Constants.TRAILER_BASE_URL).buildUpon()
-                        .appendEncodedPath("watch").appendQueryParameter("v", key)
+                        .appendEncodedPath(getActivity().getString(R.string.watch_path_youtube_attr))
+                        .appendQueryParameter(getActivity().getString(R.string.query_parameter_youtube), key)
                         .build();
                 trailerUrlList.add(trailerUri.toString());
-                String name = obj.getString("name");
+                String name = obj.getString(getActivity().getString(R.string.name_video_attr));
                 trailerList.add(name);
             }
             TrailersAdapter trailersAdapter = new TrailersAdapter(getActivity(), trailerList, trailerUrlList);
@@ -192,16 +190,15 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
             trailerRecyclerView.setLayoutManager(linearLayoutManager);
             trailerRecyclerView.setAdapter(trailersAdapter);
-            JSONArray reviewjs = new JSONArray(reviewsjson);
-            if (reviewjs.toString().length() == 0) {
-                Log.d(TAG, "No objects present");
-                reviewAuthorList.add("No Author Available");
-                reviewList.add("No Review Available");
+            reviewJsonArray = new JSONArray(reviewsjson);
+            if (reviewJsonArray.toString().length() == 0) {
+                reviewAuthorList.add(getActivity().getString(R.string.not_available_text));
+                reviewList.add(getActivity().getString(R.string.not_available_text));
             }
-            for (int j = 0; j < reviewjs.length(); j++) {
-                JSONObject o = reviewjs.getJSONObject(j);
-                String auth = o.getString("author");
-                String cont = o.getString("content");
+            for (int j = 0; j < reviewJsonArray.length(); j++) {
+                JSONObject o = reviewJsonArray.getJSONObject(j);
+                String auth = o.getString(getActivity().getString(R.string.author_attr));
+                String cont = o.getString(getActivity().getString(R.string.content_attr));
                 reviewAuthorList.add(auth);
                 reviewList.add(cont);
             }
@@ -210,49 +207,32 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             linearLayoutManager1.setOrientation(LinearLayoutManager.VERTICAL);
             reviewsRecyclerView.setLayoutManager(linearLayoutManager1);
             reviewsRecyclerView.setAdapter(reviewsAdapter);
-//            favoritebutton.setOnFavoriteChangeListener(new MaterialFavoriteButton.OnFavoriteChangeListener() {
-//                @Override
-//                public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
-//                    Log.d(TAG, "Star clicked,,............");
-//                    if (favorite) {
-//                        ContentValues moviefavour = new ContentValues();
-//                        moviefavour.put(DataContract.Favourite.COLUMN_ID, data.getString(COL_MOVIE_ID));
-//                        moviefavour.put(DataContract.Favourite.COLUMN_TITLE, data.getString(COL_MOVIE_TITLE));
-//                        moviefavour.put(DataContract.Favourite.COLUMN_POSTER, data.getString(COL_MOVIE_POSTER));
-//                        moviefavour.put(DataContract.Favourite.COLUMN_RELEASE_DATE, data.getString(COL_RELEASE));
-//                        moviefavour.put(DataContract.Favourite.COLUMN_VOTE_AVERAGE, data.getString(COL_RATE));
-//                        moviefavour.put(DataContract.Favourite.COLUMN_OVERVIEW, data.getString(COL_OVERVIEW));
-//                        moviefavour.put(DataContract.Favourite.COLUMN_TRAILER, data.getString(COL_TRAILER));
-//                        moviefavour.put(DataContract.Favourite.COLUMN_REVIEWS, data.getString(COL_REVIEWS));
-//                        getActivity().getContentResolver().insert(DataContract.Favourite.CONTENT_URI, moviefavour);
-//                        Toast.makeText(getActivity(), "Added as Favourites", Toast.LENGTH_SHORT).show();
-//                        Set<String> idset = new HashSet<String>();
-//                        idset.add(data.getString(COL_MOVIE_ID));
-//                        SharedPreferences.Editor editor = preferences.edit();
-//                        editor.putStringSet("ids", idset);
-//                        editor.commit();
-//                    }
-//                    if (!favorite) {
-//                        String deleteid[] = {data.getString(COL_MOVIE_ID)};
-//                        getActivity().getContentResolver().delete(DataContract.Favourite.buildFavourIdUri(data.getString(COL_MOVIE_ID)), null, deleteid);
-//                        preferences = getActivity().getSharedPreferences("favourRecord", Context.MODE_PRIVATE);
-//                        Set<String> idvals = preferences.getStringSet("ids", defaultids);
-//                        if (idvals.contains(data.getString(COL_MOVIE_ID))) {
-//                            idvals.remove(data.getString(COL_MOVIE_ID));
-//                        }
-//                        Set<String> newvals = new HashSet<String>();
-//                        Iterator itarator = idvals.iterator();
-//                        while (itarator.hasNext()) {
-//                            String vals = (String) itarator.next();
-//                            newvals.add(vals);
-//                        }
-//                        SharedPreferences.Editor editor = preferences.edit();
-//                        editor.putStringSet("ïds", newvals);
-//                        editor.commit();
-//                        Toast.makeText(getActivity(), "Removed from the Favourites", Toast.LENGTH_SHORT).show();
-//                    }
-//                }
-//            });
+            favoriteButton.setOnFavoriteChangeListener(new MaterialFavoriteButton.OnFavoriteChangeListener() {
+                @Override
+                public void onFavoriteChanged(MaterialFavoriteButton buttonView, boolean favorite) {
+                    if (favorite) {
+                        ContentValues movieValues = new ContentValues();
+                        movieValues.put(DataContract.Favourite.COLUMN_ID, data.getString(COL_MOVIE_ID));
+                        movieValues.put(DataContract.Favourite.COLUMN_TITLE, data.getString(COL_MOVIE_TITLE));
+                        movieValues.put(DataContract.Favourite.COLUMN_POSTER, data.getString(COL_MOVIE_POSTER));
+                        movieValues.put(DataContract.Favourite.COLUMN_RELEASE_DATE, data.getString(COL_RELEASE));
+                        movieValues.put(DataContract.Favourite.COLUMN_VOTE_AVERAGE, data.getString(COL_RATE));
+                        movieValues.put(DataContract.Favourite.COLUMN_OVERVIEW, data.getString(COL_OVERVIEW));
+                        movieValues.put(DataContract.Favourite.COLUMN_TRAILER, data.getString(COL_TRAILER));
+                        movieValues.put(DataContract.Favourite.COLUMN_REVIEWS, data.getString(COL_REVIEWS));
+                        movieValues.put(DataContract.Favourite.COLUMN_BACKDROP_IMG, data.getString(COL_BACKDROP_IMG));
+                        getActivity().getContentResolver().insert(DataContract.Favourite.CONTENT_URI, movieValues);
+                        Toast.makeText(getActivity(), getActivity().getString(R.string.add_favorite_message), Toast.LENGTH_SHORT).show();
+                    }
+                    if (!favorite) {
+                        String deleteid[] = {data.getString(COL_MOVIE_ID)};
+                        getActivity().getContentResolver()
+                                .delete(DataContract.Favourite
+                                        .buildFavourIdUri(data.getString(COL_MOVIE_ID)), null, deleteid);
+                        Toast.makeText(getActivity(), getActivity().getString(R.string.remove_favorites_message), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
             Picasso.with(getActivity()).load(bannerImg).into(barimage, new Callback() {
                 @Override
                 public void onSuccess() {
@@ -264,14 +244,28 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
                 }
             });
-            Picasso.with(getActivity()).load(imgpath).into(poster);
-            title.setText(ti);
+            Picasso.with(getActivity()).load(imgPath).into(poster);
+            title.setText(movieTitle);
             release.setText(releaseDate);
             rate.setText(rating);
-            overview.setText(ov);
+            overview.setText(overviewText);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean checkIfPresentInFavorites(String id) {
+        Cursor cursor = getActivity().getContentResolver().query(DataContract.Favourite.CONTENT_URI,
+                MOVIE_COLUMNS,
+                DataContract.Favourite.COLUMN_ID + "='" + id + "'",
+                null, null);
+        if (cursor != null) {
+            if (cursor.getCount() > 0) {
+                return true;
+            }
+            cursor.close();
+        }
+        return false;
     }
 
     @Override

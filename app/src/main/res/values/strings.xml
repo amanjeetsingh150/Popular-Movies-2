@@ -25,4 +25,13 @@
     <string name="content_authority">com.developers.popularmovies2</string>
     <string name="sync_account_type">popularmovies2.developers.com</string>
     <string name="add_to_favor_text">Add to Favorites:</string>
+    <string name="not_available_text">NOT AVAILABLE</string>
+    <string name="key_attr">key</string>
+    <string name="watch_path_youtube_attr">watch</string>
+    <string name="query_parameter_youtube">v</string>
+    <string name="name_video_attr">name</string>
+    <string name="author_attr">author</string>
+    <string name="content_attr">content</string>
+    <string name="add_favorite_message">Added as Favourites</string>
+    <string name="remove_favorites_message">Removed from the Favourites</string>
 </resources>

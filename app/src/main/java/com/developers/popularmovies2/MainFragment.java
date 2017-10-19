@@ -238,13 +238,8 @@ public class MainFragment extends Fragment implements
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (!(sharedPreferences.getString("order", "0").equals("2"))) {
-            Log.d(TAG, "Restaring loader for favourites");
-            updateMovie();
-            getLoaderManager().restartLoader(MOVIES_LOADER, null, this);
-        } else {
-            getLoaderManager().restartLoader(MOVIES_LOADER, null, this);
-        }
+        updateMovie();
+        getLoaderManager().restartLoader(MOVIES_LOADER, null, this);
     }
 
     public interface Callback {
