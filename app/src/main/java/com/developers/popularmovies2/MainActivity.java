@@ -16,6 +16,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
     private boolean mTwoPane;
     private SharedPreferences preferences;
     private String sort;
+    private static final String TAG=MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,11 +27,14 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
         sort = preferences.getString("order", "0");
         if (findViewById(R.id.movie_detail_container) != null) {
             mTwoPane = true;
+            MainFragment.twoPane = true;
+            Log.d(TAG,"twoPaneeeeeeeeeeeeeee ");
             if (savedInstanceState == null) {
                 getSupportFragmentManager().beginTransaction().
                         replace(R.id.movie_detail_container, new DetailFragment(), DETAIL_TAG)
                         .commit();
             }
+
         } else {
             mTwoPane = false;
         }
@@ -40,8 +44,6 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
     @Override
     protected void onResume() {
         super.onResume();
-        String msort = preferences.getString("order", "0");
-        Log.d("in on resume", "value of sort " + msort);
     }
 
     @Override

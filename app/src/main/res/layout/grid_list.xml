@@ -16,7 +16,8 @@
             android:id="@+id/movie_img_view"
             android:layout_width="match_parent"
             android:layout_height="300dp"
-            android:scaleType="fitXY" />
+            android:scaleType="fitXY"
+            android:transitionName="@string/transition_image"/>
 
         <TextView
             android:id="@+id/movie_title_text"

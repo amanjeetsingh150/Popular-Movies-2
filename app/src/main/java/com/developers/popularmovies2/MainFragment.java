@@ -2,10 +2,14 @@ package com.developers.popularmovies2;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -20,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.developers.popularmovies2.data.DataContract;
 import com.developers.popularmovies2.adapters.GridAdapter;
@@ -34,7 +39,7 @@ import butterknife.ButterKnife;
  * A simple {@link Fragment} subclass.
  */
 public class MainFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor>, SharedPreferences.OnSharedPreferenceChangeListener {
+        LoaderManager.LoaderCallbacks<Cursor>{
 
     public static final int COL_ID = 0;
     public static final int COL_MOVIE_ID = 1;
@@ -55,9 +60,11 @@ public class MainFragment extends Fragment implements
             DataContract.Rated.COLUMN_POSTER
     };
     private static final int MOVIES_LOADER = 0;
+    public static boolean twoPane;
     @BindView(R.id.movie_grid)
     GridView movieGrid;
     private String sort;
+    public static boolean changed=false;
     private Cursor cur;
     private GridAdapter gridAdapter;
     private int mPosition = ListView.INVALID_POSITION;
@@ -76,7 +83,6 @@ public class MainFragment extends Fragment implements
         View v = inflater.inflate(R.layout.fragment_movie_grid, container, false);
         ButterKnife.bind(this, v);
         preferences = getActivity().getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
-        preferences.registerOnSharedPreferenceChangeListener(this);
         sort = preferences.getString(getActivity().getString(R.string.preferences_key), "0");
         Uri movieUri = null;
         switch (sort) {
@@ -141,30 +147,35 @@ public class MainFragment extends Fragment implements
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        if(isNetworkConnected()) {
+            if (changed) {
+                updateMovie();
+                getLoaderManager().restartLoader(MOVIES_LOADER, null, this);
+            }
+            changed=false;
+        }
+        else {
+            Toast.makeText(getActivity(), getString(R.string.no_internet_error), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private boolean isNetworkConnected() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            //popular
-            SharedPreferences preferences = getActivity()
-                    .getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString(getActivity().getString(R.string.preferences_key), "0");
-            editor.apply();
-        }
-        if (id == R.id.action_settings1) {
-            //toprated
-            SharedPreferences preferences = getActivity()
-                    .getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString(getActivity().getString(R.string.preferences_key), "1");
-            editor.apply();
-        }
-        if (id == R.id.action_settings2) {
-            SharedPreferences preferences = getActivity()
-                    .getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString(getActivity().getString(R.string.preferences_key), "2");
-            editor.apply();
+        switch (item.getItemId()) {
+            case R.id.sort_by:
+                startActivity(new Intent(getActivity(), SettingsActivity.class));
         }
         return super.onOptionsItemSelected(item);
     }
@@ -181,15 +192,16 @@ public class MainFragment extends Fragment implements
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         if (mPosition != ListView.INVALID_POSITION) {
             outState.putInt(SELECTED_KEY, mPosition);
         }
-        super.onSaveInstanceState(outState);
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        SharedPreferences preferences = getActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        SharedPreferences preferences = getActivity()
+                .getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
         String sort = preferences.getString("order", "0");
         Uri movieUri = null;
         switch (sort) {
@@ -236,13 +248,9 @@ public class MainFragment extends Fragment implements
         super.onDestroy();
     }
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        updateMovie();
-        getLoaderManager().restartLoader(MOVIES_LOADER, null, this);
-    }
-
     public interface Callback {
         void onItemSelected(Uri dataUri);
     }
+
+
 }

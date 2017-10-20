@@ -12,4 +12,7 @@
         android:id="@+id/action_settings2"
         android:title="Favourites"
         app:showAsAction="never"/>
+    <item
+        android:id="@+id/sort_by"
+        android:title="Sort By"/>
 </menu>

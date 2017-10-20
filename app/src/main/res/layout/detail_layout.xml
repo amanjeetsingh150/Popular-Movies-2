@@ -16,6 +16,7 @@
             android:id="@+id/poster_image_view"
             android:layout_width="140dp"
             android:layout_height="184dp"
+            android:transitionName="@string/transition_image"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
