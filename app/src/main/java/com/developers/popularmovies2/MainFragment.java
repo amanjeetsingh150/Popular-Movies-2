@@ -154,6 +154,19 @@ public class MainFragment extends Fragment implements
         super.onStart();
         if (isNetworkConnected()) {
             if (changed) {
+                SharedPreferences preferences = getActivity()
+                        .getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
+                String sort = preferences.getString(getActivity().getString(R.string.preferences_key), "0");
+                if (gridAdapter.getCount()==0 && sort.equals("1")) {
+                    progressDialogTwo = new ProgressDialog(getActivity());
+                    progressDialogTwo.setMessage(getActivity().getString(R.string.loading_message));
+                    progressDialogTwo.setCancelable(false);
+                    progressDialogTwo.show();
+                }
+                if (!sort.equals("2")) {
+                    Log.d(TAG, "YESSSSSSSSS");
+                    progressDialog.show();
+                }
                 updateMovie();
                 getLoaderManager().restartLoader(MOVIES_LOADER, null, this);
             }
