@@ -154,15 +154,6 @@ public class MainFragment extends Fragment implements
         super.onStart();
         if (isNetworkConnected()) {
             if (changed) {
-                SharedPreferences preferences = getActivity()
-                        .getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
-                String sort = preferences.getString(getActivity().getString(R.string.preferences_key), "0");
-                if (movieGrid.getCount()==0 && !sort.equals("2")) {
-                    progressDialogTwo = new ProgressDialog(getActivity());
-                    progressDialogTwo.setMessage(getActivity().getString(R.string.loading_message));
-                    progressDialogTwo.setCancelable(false);
-                    progressDialogTwo.show();
-                }
                 updateMovie();
                 getLoaderManager().restartLoader(MOVIES_LOADER, null, this);
             }
@@ -267,11 +258,18 @@ public class MainFragment extends Fragment implements
 
     @Override
     public void hideLoading() {
-        if (progressDialog.isShowing() && progressDialog!=null) {
-            progressDialog.cancel();
+
+        if (progressDialog != null) {
+            if (progressDialog.isShowing()) {
+                progressDialog.cancel();
+            }
         }
-        if (progressDialogTwo.isShowing() && progressDialogTwo!=null) {
-            progressDialogTwo.cancel();
+
+
+        if (progressDialogTwo != null) {
+            if (progressDialogTwo.isShowing()) {
+                progressDialogTwo.cancel();
+            }
         }
     }
 
