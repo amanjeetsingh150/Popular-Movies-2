@@ -72,7 +72,7 @@ public class MainFragment extends Fragment implements
     private int mPosition = ListView.INVALID_POSITION;
     private SharedPreferences preferences;
     private CursorLoader curr;
-    private ProgressDialog progressDialog, progressDialogTwo;
+    private ProgressDialog progressDialog;
 
     public MainFragment() {
         // Required empty public constructor
@@ -102,6 +102,10 @@ public class MainFragment extends Fragment implements
         if (!sort.equals("2")) {
             MovieSyncAdapter.syncImmediately(getActivity());
         }
+        //Initializing
+        progressDialog = new ProgressDialog(getActivity());
+        progressDialog.setMessage(getActivity().getString(R.string.loading_message));
+        progressDialog.setCancelable(false);
         MovieSyncAdapter.setSyncCallBack(this);
         switch (sort) {
             case "0":
@@ -158,10 +162,7 @@ public class MainFragment extends Fragment implements
                         .getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
                 String sort = preferences.getString(getActivity().getString(R.string.preferences_key), "0");
                 if (gridAdapter.getCount()==0 && sort.equals("1")) {
-                    progressDialogTwo = new ProgressDialog(getActivity());
-                    progressDialogTwo.setMessage(getActivity().getString(R.string.loading_message));
-                    progressDialogTwo.setCancelable(false);
-                    progressDialogTwo.show();
+                    progressDialog.show();
                 }
                 if (!sort.equals("2")) {
                     Log.d(TAG, "YESSSSSSSSS");
@@ -218,10 +219,7 @@ public class MainFragment extends Fragment implements
         SharedPreferences preferences = getActivity()
                 .getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
         String sort = preferences.getString(getActivity().getString(R.string.preferences_key), "0");
-        if (movieGrid.getCount() == 0 && !sort.equals("2")) {
-            progressDialog = new ProgressDialog(getActivity());
-            progressDialog.setMessage(getActivity().getString(R.string.loading_message));
-            progressDialog.setCancelable(false);
+        if (gridAdapter.getCount() == 0 && !sort.equals("2")) {
             progressDialog.show();
         }
         Uri movieUri = null;
@@ -274,16 +272,10 @@ public class MainFragment extends Fragment implements
 
         if (progressDialog != null) {
             if (progressDialog.isShowing()) {
-                progressDialog.cancel();
+                progressDialog.dismiss();
             }
         }
 
-
-        if (progressDialogTwo != null) {
-            if (progressDialogTwo.isShowing()) {
-                progressDialogTwo.cancel();
-            }
-        }
     }
 
     public interface Callback {
