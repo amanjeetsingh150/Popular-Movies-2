@@ -60,4 +60,5 @@
     <string name="sort_default">0</string>
     <string name="sort_title">Sort Order</string>
     <string name="no_internet_error">You are not connected to internet!!/nPlease connect and try again.</string>
+    <string name="sort_by">Sort By</string>
 </resources>

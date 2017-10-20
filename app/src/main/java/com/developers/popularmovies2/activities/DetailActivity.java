@@ -1,7 +1,10 @@
-package com.developers.popularmovies2;
+package com.developers.popularmovies2.activities;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import com.developers.popularmovies2.DetailFragment;
+import com.developers.popularmovies2.R;
 
 public class DetailActivity extends AppCompatActivity {
 

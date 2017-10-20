@@ -1,4 +1,4 @@
-package com.developers.popularmovies2;
+package com.developers.popularmovies2.activities;
 
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +8,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.developers.popularmovies2.DetailFragment;
+import com.developers.popularmovies2.MainFragment;
+import com.developers.popularmovies2.R;
 import com.developers.popularmovies2.sync.MovieSyncAdapter;
 import com.developers.popularmovies2.util.Constants;
 
@@ -24,11 +27,9 @@ public class MainActivity extends AppCompatActivity implements MainFragment.Call
         setContentView(R.layout.activity_main);
         MovieSyncAdapter.initializeSyncAdapter(this);
         preferences = this.getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
-        sort = preferences.getString("order", "0");
+        sort = preferences.getString(getString(R.string.preferences_key), "0");
         if (findViewById(R.id.movie_detail_container) != null) {
             mTwoPane = true;
-            MainFragment.twoPane = true;
-            Log.d(TAG,"twoPaneeeeeeeeeeeeeee ");
             if (savedInstanceState == null) {
                 getSupportFragmentManager().beginTransaction().
                         replace(R.id.movie_detail_container, new DetailFragment(), DETAIL_TAG)

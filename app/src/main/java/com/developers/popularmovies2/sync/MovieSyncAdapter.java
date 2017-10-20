@@ -14,7 +14,6 @@ import android.content.SharedPreferences;
 import android.content.SyncRequest;
 import android.content.SyncResult;
 import android.net.Uri;
-import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
@@ -22,7 +21,7 @@ import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
 import com.developers.popularmovies2.BuildConfig;
-import com.developers.popularmovies2.MainActivity;
+import com.developers.popularmovies2.activities.MainActivity;
 import com.developers.popularmovies2.R;
 import com.developers.popularmovies2.data.DataContract;
 import com.developers.popularmovies2.util.Constants;
@@ -35,7 +34,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Vector;
 
 /**

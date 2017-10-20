@@ -9,7 +9,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -26,6 +25,7 @@ import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.developers.popularmovies2.activities.SettingsActivity;
 import com.developers.popularmovies2.data.DataContract;
 import com.developers.popularmovies2.adapters.GridAdapter;
 import com.developers.popularmovies2.sync.MovieSyncAdapter;
@@ -39,7 +39,7 @@ import butterknife.ButterKnife;
  * A simple {@link Fragment} subclass.
  */
 public class MainFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor>{
+        LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final int COL_ID = 0;
     public static final int COL_MOVIE_ID = 1;
@@ -60,11 +60,10 @@ public class MainFragment extends Fragment implements
             DataContract.Rated.COLUMN_POSTER
     };
     private static final int MOVIES_LOADER = 0;
-    public static boolean twoPane;
+    public static boolean changed = false;
     @BindView(R.id.movie_grid)
     GridView movieGrid;
     private String sort;
-    public static boolean changed=false;
     private Cursor cur;
     private GridAdapter gridAdapter;
     private int mPosition = ListView.INVALID_POSITION;
@@ -149,14 +148,13 @@ public class MainFragment extends Fragment implements
     @Override
     public void onStart() {
         super.onStart();
-        if(isNetworkConnected()) {
+        if (isNetworkConnected()) {
             if (changed) {
                 updateMovie();
                 getLoaderManager().restartLoader(MOVIES_LOADER, null, this);
             }
-            changed=false;
-        }
-        else {
+            changed = false;
+        } else {
             Toast.makeText(getActivity(), getString(R.string.no_internet_error), Toast.LENGTH_SHORT).show();
         }
     }
@@ -248,9 +246,9 @@ public class MainFragment extends Fragment implements
         super.onDestroy();
     }
 
+
     public interface Callback {
         void onItemSelected(Uri dataUri);
     }
-
 
 }

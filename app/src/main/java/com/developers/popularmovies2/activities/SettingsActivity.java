@@ -1,4 +1,4 @@
-package com.developers.popularmovies2;
+package com.developers.popularmovies2.activities;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -9,6 +9,8 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 
+import com.developers.popularmovies2.MainFragment;
+import com.developers.popularmovies2.R;
 import com.developers.popularmovies2.util.Constants;
 
 /**

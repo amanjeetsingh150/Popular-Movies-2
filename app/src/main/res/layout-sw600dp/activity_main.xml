@@ -7,7 +7,7 @@
     android:baselineAligned="false"
     android:divider="?android:attr/dividerHorizontal"
     android:orientation="horizontal"
-    tools:context="com.developers.popularmovies2.MainActivity">
+    tools:context="com.developers.popularmovies2.activities.MainActivity">
 
     <fragment
         android:id="@+id/fragment_movies"
