@@ -61,4 +61,6 @@
     <string name="sort_title">Sort Order</string>
     <string name="no_internet_error">You are not connected to internet!!/nPlease connect and try again.</string>
     <string name="sort_by">Sort By</string>
+    <string name="loading_message">Loading&#8230;</string>
+    <string name="no_movie_available">No Movie Available</string>
 </resources>

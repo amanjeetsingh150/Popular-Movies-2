@@ -170,7 +170,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                 favoriteButton.setFavorite(true, false);
             }
             JSONArray trailerJsonArray = new JSONArray(trailerjson);
-            if (trailerJsonArray.length() == 0) {
+            if(trailerJsonArray.length() == 0) {
                 trailerList.add(getActivity().getString(R.string.not_available_text));
                 trailerUrlList.add(getActivity().getString(R.string.not_available_text));
             }
@@ -191,7 +191,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             trailerRecyclerView.setLayoutManager(linearLayoutManager);
             trailerRecyclerView.setAdapter(trailersAdapter);
             reviewJsonArray = new JSONArray(reviewsjson);
-            if (reviewJsonArray.toString().length() == 0) {
+            if (reviewJsonArray.length() == 0) {
                 reviewAuthorList.add(getActivity().getString(R.string.not_available_text));
                 reviewList.add(getActivity().getString(R.string.not_available_text));
             }

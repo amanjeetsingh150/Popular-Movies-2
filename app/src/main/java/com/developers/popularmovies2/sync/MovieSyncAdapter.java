@@ -4,6 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
@@ -21,10 +22,12 @@ import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
 import com.developers.popularmovies2.BuildConfig;
+import com.developers.popularmovies2.MainFragment;
 import com.developers.popularmovies2.activities.MainActivity;
 import com.developers.popularmovies2.R;
 import com.developers.popularmovies2.data.DataContract;
 import com.developers.popularmovies2.util.Constants;
+import com.developers.popularmovies2.util.SyncCallBack;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -47,7 +50,7 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
     private String title, overview, release, rating, id, trailers, reviews;
     private Vector<ContentValues> cVVector;
     private Uri uri, trailerUri, posterUri, bannerUri;
-
+    public static SyncCallBack syncCallBack;
 
     public MovieSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -199,9 +202,14 @@ public class MovieSyncAdapter extends AbstractThreadedSyncAdapter {
             }
             notifyMovies();
             conn.disconnect();
+            syncCallBack.hideLoading();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void setSyncCallBack(SyncCallBack syncCallBack) {
+        MovieSyncAdapter.syncCallBack = syncCallBack;
     }
 
     private void notifyMovies() {

@@ -1,6 +1,7 @@
 package com.developers.popularmovies2;
 
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,11 +26,13 @@ import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.developers.coolprogressviews.DoubleArcProgress;
 import com.developers.popularmovies2.activities.SettingsActivity;
 import com.developers.popularmovies2.data.DataContract;
 import com.developers.popularmovies2.adapters.GridAdapter;
 import com.developers.popularmovies2.sync.MovieSyncAdapter;
 import com.developers.popularmovies2.util.Constants;
+import com.developers.popularmovies2.util.SyncCallBack;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -39,7 +42,7 @@ import butterknife.ButterKnife;
  * A simple {@link Fragment} subclass.
  */
 public class MainFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor> {
+        LoaderManager.LoaderCallbacks<Cursor>, SyncCallBack {
 
     public static final int COL_ID = 0;
     public static final int COL_MOVIE_ID = 1;
@@ -69,6 +72,7 @@ public class MainFragment extends Fragment implements
     private int mPosition = ListView.INVALID_POSITION;
     private SharedPreferences preferences;
     private CursorLoader curr;
+    private ProgressDialog progressDialog, progressDialogTwo;
 
     public MainFragment() {
         // Required empty public constructor
@@ -98,6 +102,7 @@ public class MainFragment extends Fragment implements
         if (!sort.equals("2")) {
             MovieSyncAdapter.syncImmediately(getActivity());
         }
+        MovieSyncAdapter.setSyncCallBack(this);
         switch (sort) {
             case "0":
                 cur = getActivity().getContentResolver().query(movieUri, MOVIE_COLUMNS, null, null, null);
@@ -118,7 +123,6 @@ public class MainFragment extends Fragment implements
                 String movieid = c.getString(COL_MOVIE_ID);
                 String sortKey = preferences
                         .getString(getActivity().getString(R.string.preferences_key), "0");
-                Log.d(TAG, "val of sort " + sortKey);
                 Uri movieUri = null;
                 switch (sortKey) {
                     case "0":
@@ -150,6 +154,15 @@ public class MainFragment extends Fragment implements
         super.onStart();
         if (isNetworkConnected()) {
             if (changed) {
+                SharedPreferences preferences = getActivity()
+                        .getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
+                String sort = preferences.getString(getActivity().getString(R.string.preferences_key), "0");
+                if (movieGrid.getCount()==0 && !sort.equals("2")) {
+                    progressDialogTwo = new ProgressDialog(getActivity());
+                    progressDialogTwo.setMessage(getActivity().getString(R.string.loading_message));
+                    progressDialogTwo.setCancelable(false);
+                    progressDialogTwo.show();
+                }
                 updateMovie();
                 getLoaderManager().restartLoader(MOVIES_LOADER, null, this);
             }
@@ -200,7 +213,13 @@ public class MainFragment extends Fragment implements
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         SharedPreferences preferences = getActivity()
                 .getSharedPreferences(Constants.SHARED_PREFERENCES, Context.MODE_PRIVATE);
-        String sort = preferences.getString("order", "0");
+        String sort = preferences.getString(getActivity().getString(R.string.preferences_key), "0");
+        if (movieGrid.getCount() == 0 && !sort.equals("2")) {
+            progressDialog = new ProgressDialog(getActivity());
+            progressDialog.setMessage(getActivity().getString(R.string.loading_message));
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
         Uri movieUri = null;
         switch (sort) {
             case "0":
@@ -246,6 +265,15 @@ public class MainFragment extends Fragment implements
         super.onDestroy();
     }
 
+    @Override
+    public void hideLoading() {
+        if (progressDialog.isShowing() && progressDialog!=null) {
+            progressDialog.cancel();
+        }
+        if (progressDialogTwo.isShowing() && progressDialogTwo!=null) {
+            progressDialogTwo.cancel();
+        }
+    }
 
     public interface Callback {
         void onItemSelected(Uri dataUri);
