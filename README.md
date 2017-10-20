@@ -1,17 +1,16 @@
 # Popular-Movies-2
 Popular Movies stage-2
-This is stage-2 of Popular movies part of udacity course.
+This is stage-2 of Popular movies part of Udacity Nanodegree course.
 Learning outcomes:-<br>
 1. Implementing content providers with SQLite database.<br>
 2. Working with SyncAdapter.<br>
 3. Using Loaders.<br>
 4. Notifications.<br>
-5. MultiPane layouts for Tablets.<br><br>
-![tab3](https://cloud.githubusercontent.com/assets/12881364/21588897/5e1d0c12-d111-11e6-8a7e-b7d6110b98ca.jpg)
+5. MultiPane layouts for Tablets.
+
 <br><br>
-![15871716_1539593466069742_1839143441070387007_n](https://cloud.githubusercontent.com/assets/12881364/21589017/1b2c08de-d113-11e6-8bc8-4e80587997b2.jpg)
+<img src="https://user-images.githubusercontent.com/12881364/31838842-1d8e4168-b5fc-11e7-8ab6-d36e8cbb478c.png" height=500>&nbsp; &nbsp;&nbsp;<img src="https://user-images.githubusercontent.com/12881364/31838846-21722772-b5fc-11e7-97a8-d53c2e022608.png" height=500>
 <br><br>
-![15780750_1539593616069727_8360534999442056881_n](https://cloud.githubusercontent.com/assets/12881364/21589024/3958e840-d113-11e6-904e-d3d4502aacd2.jpg)
+<img src="https://user-images.githubusercontent.com/12881364/31838854-268bd26c-b5fc-11e7-8ef5-9cff9afddbf6.png" height=500>&nbsp; &nbsp;&nbsp;<img src="https://user-images.githubusercontent.com/12881364/31838861-2bf13ef4-b5fc-11e7-8ff9-930f6874542b.png" height=500>
 <br><br>
-![15826907_1539593882736367_9035929977637573114_n](https://cloud.githubusercontent.com/assets/12881364/21589033/5024681a-d113-11e6-911a-f3e7bdf9a566.jpg)<br><br>
-![15894717_1539978526031236_1033083722566518172_n](https://cloud.githubusercontent.com/assets/12881364/21596245/b1e9458e-d15e-11e6-866f-f73ee0ea12b0.jpg)
+<img src="https://user-images.githubusercontent.com/12881364/31838870-31f8c0c4-b5fc-11e7-99a4-032a04c07df8.png" height=500>
